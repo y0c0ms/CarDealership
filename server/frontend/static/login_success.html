@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Successful - Best Cars Dealership</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/bootstrap.min.css">
+</head>
+<body>
+    <div class="container text-center" style="margin-top: 10%;">
+        <div class="card" style="max-width: 500px; margin: 0 auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            <div class="card-body" style="padding: 3rem;">
+                <div style="color: darkturquoise; font-size: 4rem; margin-bottom: 1rem;">✅</div>
+                <h2 style="color: darkturquoise; margin-bottom: 1rem;">Login Successful!</h2>
+                <p class="lead">Welcome back, <strong>{{ username }}</strong>!</p>
+                <p>You will be redirected to the homepage in a moment...</p>
+                
+                <div class="spinner-border text-primary" role="status" style="color: darkturquoise !important;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set username in sessionStorage for the homepage JavaScript
+        sessionStorage.setItem('username', '{{ username }}');
+        
+        // Redirect to homepage after 2 seconds
+        setTimeout(function() {
+            window.location.href = '/';
+        }, 2000);
+    </script>
+</body>
+</html> 
