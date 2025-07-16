@@ -11,28 +11,32 @@ sentiment_analyzer_url = os.getenv(
     'sentiment_analyzer_url',
     default="http://localhost:5050/")
 
+
 def get_request(endpoint, **kwargs):
     # Simple implementation - hardcode the backend URL for testing
     request_url = "http://localhost:3030" + endpoint
-    
+
     print(f"DEBUG: Attempting to GET {request_url}")
-    
+
     try:
         import requests
         response = requests.get(request_url, timeout=10)
         print(f"DEBUG: Response status: {response.status_code}")
-        
+
         if response.status_code == 200:
             data = response.json()
-            print(f"DEBUG: Got {len(data) if isinstance(data, list) else 'non-list'} items")
+            # Check if data is list and get length or say 'non-list'
+            items_info = len(data) if isinstance(data, list) else 'non-list'
+            print(f"DEBUG: Got {items_info} items")
             return data
         else:
             print(f"DEBUG: HTTP Error {response.status_code}")
             return None
-            
+
     except Exception as e:
         print(f"DEBUG: Exception occurred: {e}")
         return None
+
 
 def analyze_review_sentiments(text):
     request_url = sentiment_analyzer_url+"analyze/"+text
@@ -45,6 +49,7 @@ def analyze_review_sentiments(text):
         print("Network exception occurred")
 # request_url = sentiment_analyzer_url+"analyze/"+text
 # Add code for retrieving sentiments
+
 
 def post_review(data_dict):
     request_url = "http://localhost:3030/insert_review"
