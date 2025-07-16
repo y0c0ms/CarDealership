@@ -16,8 +16,8 @@ const dealerships_data = JSON.parse(fs.readFileSync("data/dealerships.json", 'ut
 
 
 // Use JSON data directly for local development
-let reviews = reviews_data['reviews'];
-let dealerships = dealerships_data['dealerships'];
+let reviews = reviews_data.reviews;
+let dealerships = dealerships_data.dealerships;
 
 console.log(`Loaded ${dealerships.length} dealerships and ${reviews.length} reviews from JSON files`);
 
@@ -80,7 +80,7 @@ app.get('/fetchDealer/:id', (req, res) => {
 //Express route to insert review
 app.post('/insert_review', express.json(), (req, res) => {
   try {
-    data = req.body;
+    const data = req.body;
     
     // Find the highest existing ID and increment
     let new_id = 1;
@@ -90,14 +90,14 @@ app.post('/insert_review', express.json(), (req, res) => {
 
     const newReview = {
       "id": new_id,
-      "name": data['name'],
-      "dealership": parseInt(data['dealership']),
-      "review": data['review'],
-      "purchase": data['purchase'],
-      "purchase_date": data['purchase_date'],
-      "car_make": data['car_make'],
-      "car_model": data['car_model'],
-      "car_year": parseInt(data['car_year']),
+      "name": data.name,
+      "dealership": parseInt(data.dealership),
+      "review": data.review,
+      "purchase": data.purchase,
+      "purchase_date": data.purchase_date,
+      "car_make": data.car_make,
+      "car_model": data.car_model,
+      "car_year": parseInt(data.car_year),
     };
 
     // Add to in-memory array
