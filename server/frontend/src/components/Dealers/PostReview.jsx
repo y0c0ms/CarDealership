@@ -48,18 +48,30 @@ const PostReview = () => {
     });
 
     console.log(jsoninput);
-    const res = await fetch(review_url, {
-      method: "POST",
-      headers: {
-          "Content-Type": "application/json",
-      },
-      body: jsoninput,
-  });
+    try {
+      const res = await fetch(review_url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: 'include', // This ensures cookies/session are sent
+        body: jsoninput,
+      });
 
-  const json = await res.json();
-  if (json.status === 200) {
-      window.location.href = window.location.origin+"/dealer/"+id;
-  }
+      console.log("Response status:", res.status);
+      const json = await res.json();
+      console.log("Response JSON:", json);
+      
+      if (json.status === 200) {
+          console.log("Redirecting to dealer page...");
+          window.location.href = window.location.origin+"/dealer/"+id;
+      } else {
+          alert("Error submitting review: " + (json.message || "Unknown error"));
+      }
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      alert("Error submitting review. Please try again.");
+    }
 
   }
   const get_dealer = async ()=>{
@@ -69,9 +81,8 @@ const PostReview = () => {
     const retobj = await res.json();
     
     if(retobj.status === 200) {
-      let dealerobjs = Array.from(retobj.dealer)
-      if(dealerobjs.length > 0)
-        setDealer(dealerobjs[0])
+      // The dealer API returns a single dealer object, not an array
+      setDealer(retobj.dealer)
     }
   }
 

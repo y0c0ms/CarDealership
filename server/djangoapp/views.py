@@ -9,7 +9,7 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 from .models import CarMake, CarModel
 from .populate import initiate
-from .restapis import get_request
+from .restapis import get_request, analyze_review_sentiments, post_review
 
 
 # Get an instance of a logger
@@ -108,33 +108,52 @@ def get_cars(request):
         cars.append({"CarModel": car_model.name, "CarMake": car_model.car_make.name})
     return JsonResponse({"CarModels":cars})
 
-# Proxy service to get dealerships from external API
+#Update the `get_dealerships` render list of dealerships all by default, particular state if state is passed
 def get_dealerships(request, state="All"):
-    endpoint = "/fetchDealers" if state == "All" else f"/fetchDealers/{state}"
-    dealerships = get_request(endpoint)
-    return JsonResponse({"status": 200, "dealers": dealerships})
-
-# Proxy service to get dealer details from external API
-def get_dealer_details(request, dealer_id):
-    if dealer_id:
-        endpoint = f"/fetchDealer/{dealer_id}"
-        dealership = get_request(endpoint)
-        return JsonResponse({"status": 200, "dealer": dealership})
+    if(state == "All"):
+        endpoint = "/fetchDealers"
     else:
-        return JsonResponse({"status": 400, "message": "Bad Request"})
+        endpoint = "/fetchDealers/"+state
+    dealerships = get_request(endpoint)
+    return JsonResponse({"status":200,"dealers":dealerships})
 
-# Proxy service to get dealer reviews from external API
+def get_dealer_details(request, dealer_id):
+    if(dealer_id):
+        endpoint = "/fetchDealer/"+str(dealer_id)
+        dealership = get_request(endpoint)
+        return JsonResponse({"status":200,"dealer":dealership})
+    else:
+        return JsonResponse({"status":400,"message":"Bad Request"})
+
 def get_dealer_reviews(request, dealer_id):
-    if dealer_id:
-        endpoint = f"/fetchReviews/dealer/{dealer_id}"
+    # if dealer id has been provided
+    if(dealer_id):
+        endpoint = "/fetchReviews/dealer/"+str(dealer_id)
         reviews = get_request(endpoint)
         for review_detail in reviews:
-            # You can add sentiment analysis here later
-            review_detail['sentiment'] = "neutral"  # Placeholder
-        return JsonResponse({"status": 200, "reviews": reviews})
+            response = analyze_review_sentiments(review_detail['review'])
+            print(response)
+            review_detail['sentiment'] = response['sentiment']
+        return JsonResponse({"status":200,"reviews":reviews})
     else:
-        return JsonResponse({"status": 400, "message": "Bad Request"})
+        return JsonResponse({"status":400,"message":"Bad Request"})
 
-# Create a `add_review` view to submit a review (to be implemented later)
-# def add_review(request):
-# ...
+@csrf_exempt
+def add_review(request):
+    print(f"DEBUG: add_review called, user: {request.user}, is_anonymous: {request.user.is_anonymous}")
+    
+    if(request.user.is_anonymous == False):
+        try:
+            data = json.loads(request.body)
+            print(f"DEBUG: Review data received: {data}")
+            
+            response = post_review(data)
+            print(f"DEBUG: post_review response: {response}")
+            
+            return JsonResponse({"status":200, "message": "Review posted successfully"})
+        except Exception as e:
+            print(f"DEBUG: Error in posting review: {e}")
+            return JsonResponse({"status":401,"message":f"Error in posting review: {str(e)}"})
+    else:
+        print("DEBUG: User is not authenticated")
+        return JsonResponse({"status":403,"message":"Unauthorized"})

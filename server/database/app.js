@@ -11,23 +11,15 @@ app.use(require('body-parser').urlencoded({ extended: false }));
 const reviews_data = JSON.parse(fs.readFileSync("data/reviews.json", 'utf8'));
 const dealerships_data = JSON.parse(fs.readFileSync("data/dealerships.json", 'utf8'));
 
-mongoose.connect("mongodb://mongo_db:27017/",{'dbName':'dealershipsDB'});
+// For local development, skip MongoDB connection and use JSON data directly
+// mongoose.connect("mongodb://mongo_db:27017/",{'dbName':'dealershipsDB'});
 
 
-const Reviews = require('./review');
-const Dealerships = require('./dealership');
+// Use JSON data directly for local development
+let reviews = reviews_data['reviews'];
+let dealerships = dealerships_data['dealerships'];
 
-try {
-  Reviews.deleteMany({}).then(()=>{
-    Reviews.insertMany(reviews_data['reviews']);
-  });
-  Dealerships.deleteMany({}).then(()=>{
-    Dealerships.insertMany(dealerships_data['dealerships']);
-  });
-  
-} catch (error) {
-  console.log('MongoDB error:', error);
-}
+console.log(`Loaded ${dealerships.length} dealerships and ${reviews.length} reviews from JSON files`);
 
 
 // Express route to home
@@ -36,76 +28,81 @@ app.get('/', async (req, res) => {
 });
 
 // Express route to fetch all reviews
-app.get('/fetchReviews', async (req, res) => {
+app.get('/fetchReviews', (req, res) => {
   try {
-    const documents = await Reviews.find();
-    res.json(documents);
+    res.json(reviews);
   } catch (error) {
     res.status(500).json({ error: 'Error fetching reviews' });
   }
 });
 
 // Express route to fetch reviews by a particular dealer
-app.get('/fetchReviews/dealer/:id', async (req, res) => {
+app.get('/fetchReviews/dealer/:id', (req, res) => {
   try {
-    const documents = await Reviews.find({dealership: req.params.id});
-    res.json(documents);
+    const dealerId = parseInt(req.params.id);
+    const dealerReviews = reviews.filter(review => review.dealership === dealerId);
+    res.json(dealerReviews);
   } catch (error) {
     res.status(500).json({ error: 'Error fetching dealer reviews' });
   }
 });
 
 // Express route to fetch all dealerships
-app.get('/fetchDealers', async (req, res) => {
+app.get('/fetchDealers', (req, res) => {
   try {
-    const documents = await Dealerships.find();
-    res.json(documents);
+    res.json(dealerships);
   } catch (error) {
     res.status(500).json({ error: 'Error fetching dealerships' });
   }
 });
 
 // Express route to fetch Dealers by a particular state
-app.get('/fetchDealers/:state', async (req, res) => {
+app.get('/fetchDealers/:state', (req, res) => {
   try {
-    const documents = await Dealerships.find({state: req.params.state});
-    res.json(documents);
+    const stateDealerships = dealerships.filter(dealer => dealer.state === req.params.state);
+    res.json(stateDealerships);
   } catch (error) {
     res.status(500).json({ error: 'Error fetching dealerships by state' });
   }
 });
 
 // Express route to fetch dealer by a particular id
-app.get('/fetchDealer/:id', async (req, res) => {
+app.get('/fetchDealer/:id', (req, res) => {
   try {
-    const document = await Dealerships.findOne({id: parseInt(req.params.id)});
-    res.json(document);
+    const dealerId = parseInt(req.params.id);
+    const dealer = dealerships.find(dealer => dealer.id === dealerId);
+    res.json(dealer);
   } catch (error) {
     res.status(500).json({ error: 'Error fetching dealer by id' });
   }
 });
 
 //Express route to insert review
-app.post('/insert_review', express.raw({ type: '*/*' }), async (req, res) => {
+app.post('/insert_review', express.json(), (req, res) => {
   try {
-    data = JSON.parse(req.body);
-    const documents = await Reviews.find().sort( { id: -1 } )
-    let new_id = documents[0]['id']+1
+    data = req.body;
+    
+    // Find the highest existing ID and increment
+    let new_id = 1;
+    if (reviews.length > 0) {
+      new_id = Math.max(...reviews.map(r => r.id)) + 1;
+    }
 
-    const review = new Reviews({
+    const newReview = {
       "id": new_id,
       "name": data['name'],
-      "dealership": data['dealership'],
+      "dealership": parseInt(data['dealership']),
       "review": data['review'],
       "purchase": data['purchase'],
       "purchase_date": data['purchase_date'],
       "car_make": data['car_make'],
       "car_model": data['car_model'],
-      "car_year": data['car_year'],
-    });
+      "car_year": parseInt(data['car_year']),
+    };
 
-    const savedReview = await review.save();
-    res.json(savedReview);
+    // Add to in-memory array
+    reviews.push(newReview);
+    res.json(newReview);
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: 'Error inserting review' });
