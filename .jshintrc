@@ -1,0 +1,33 @@
+{
+  "esversion": 8,
+  "node": true,
+  "strict": false,
+  "globalstrict": false,
+  "undef": true,
+  "unused": false,
+  "predef": [
+    "require",
+    "module",
+    "exports",
+    "console",
+    "process",
+    "global",
+    "Buffer",
+    "__dirname",
+    "__filename"
+  ],
+  "asi": true,
+  "boss": true,
+  "eqeqeq": true,
+  "eqnull": true,
+  "immed": true,
+  "latedef": false,
+  "newcap": true,
+  "noarg": true,
+  "quotmark": false,
+  "regexp": true,
+  "trailing": true,
+  "maxlen": 120,
+  "indent": 2,
+  "white": false
+} 

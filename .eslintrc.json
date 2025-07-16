@@ -1,0 +1,31 @@
+{
+  "env": {
+    "node": true,
+    "es6": true,
+    "es2017": true,
+    "es2018": true
+  },
+  "extends": ["eslint:recommended"],
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-console": "off",
+    "no-unused-vars": "warn",
+    "semi": ["error", "always"],
+    "quotes": ["warn", "single"],
+    "no-undef": "error"
+  },
+  "ignorePatterns": [
+    "node_modules/",
+    "server/frontend/node_modules/",
+    "server/frontend/build/",
+    "server/frontend/public/",
+    "server/database/node_modules/",
+    "**/node_modules/**",
+    "dist/",
+    "build/",
+    "coverage/"
+  ]
+} 

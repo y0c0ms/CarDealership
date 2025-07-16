@@ -1,0 +1,12 @@
+node_modules/
+server/frontend/node_modules/
+server/frontend/build/
+server/frontend/public/
+server/database/node_modules/
+**/node_modules/**
+dist/
+build/
+coverage/
+.git/
+*.min.js
+*.bundle.js 
